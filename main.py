@@ -1,11 +1,11 @@
-"""File deduplication utility.
-Finds duplicate files in a directory tree and prints groups.
+#!/usr/bin/env python3
 """
-
-import os, sys, hashlib
+File deduplication utility: identifies duplicate files in a directory and optionally deletes them.
+"""
+import os, argparse, hashlib
 
 def file_hash(path, block=65536):
-    h = hashlib.sha256()
+    h = hashlib.md5()
     with open(path, 'rb') as f:
         for chunk in iter(lambda: f.read(block), b''):
             h.update(chunk)
@@ -13,8 +13,8 @@ def file_hash(path, block=65536):
 
 def find_dups(root):
     size_map = {}
-    for dirpath, _, files in os.walk(root):
-        for name in files:
+    for dirpath, _, filenames in os.walk(root):
+        for name in filenames:
             path = os.path.join(dirpath, name)
             try:
                 sz = os.path.getsize(path)
@@ -26,24 +26,10 @@ def find_dups(root):
         if len(paths) < 2:
             continue
         for p in paths:
-            try:
-                h = file_hash(p)
-            except OSError:
-                continue
+            h = file_hash(p)
             hash_map.setdefault(h, []).append(p)
     return [paths for paths in hash_map.values() if len(paths) > 1]
 
 def main():
-    root = sys.argv[1] if len(sys.argv) > 1 else '.'
-    dups = find_dups(root)
-    if not dups:
-        print('No duplicates found.')
-    else:
-        for group in dups:
-            print('Duplicate group:')
-            for p in group:
-                print('  ' + p)
-            print()
-
-if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description="Find and optionally delete duplicate files.")
+    parser
